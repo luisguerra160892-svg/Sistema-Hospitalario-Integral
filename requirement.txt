@@ -1,0 +1,11 @@
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Migrate==4.0.5
+Flask-JWT-Extended==4.5.3
+Flask-Mail==0.9.1
+Werkzeug==2.3.7
+pandas==2.0.3
+matplotlib==3.7.2
+reportlab==4.0.4
+python-dotenv==1.0.0
+schedule==1.2.0

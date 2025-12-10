@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema Hospitalario{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-tachometer-alt me-2"></i>Dashboard
+{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <!-- Estadísticas principales -->
+    <div class="col-12 mb-4">
+        <div class="dashboard-stats">
+            <!-- Pacientes -->
+            <div class="stat-box patient fade-in">
+                <div class="stat-icon">
+                    <i class="fas fa-user-injured"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" data-stat="total_patients">
+                        {{ stats.total_patients|default(0)|number_format }}
+                    </div>
+                    <div class="stat-label">Pacientes Totales</div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+12% este mes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Citas de hoy -->
+            <div class="stat-box appointment fade-in" style="animation-delay: 0.1s;">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" data-stat="today_appointments">
+                        {{ stats.today_appointments|default(0) }}
+                    </div>
+                    <div class="stat-label">Citas Hoy</div>
+                    <div class="stat-trend">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ stats.next_appointment|default('No hay más citas') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consultas pendientes -->
+            <div class="stat-box warning fade-in" style="animation-delay: 0.2s;">
+                <div class="stat-icon">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" data-stat="pending_consultations">
+                        {{ stats.pending_consultations|default(0) }}
+                    </div>
+                    <div class="stat-label">Consultas Pendientes</div>
+                    <div class="stat-trend trend-down">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>-5% esta semana</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingresos del mes -->
+            <div class="stat-box success fade-in" style="animation-delay: 0.3s;">
+                <div class="stat-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" data-stat="monthly_revenue">
+                        ${{ stats.monthly_revenue|default(0)|number_format(2, '.', ',') }}
+                    </div>
+                    <div class="stat-label">Ingresos del Mes</div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+18% vs mes pasado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Gráficos -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Actividad del Mes</h5>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-primary active" data-period="month">Mes</button>
+                    <button class="btn btn-sm btn-outline-primary" data-period="week">Semana</button>
+                    <button class="btn btn-sm btn-outline-primary" data-period="day">Día</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendario -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Calendario</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="calendar-widget">
+                    <div class="calendar-header">
+                        <button class="btn btn-sm btn-light" id="prev-month">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h6 class="mb-0" id="current-month">Marzo 2024</h6>
+                        <button class="btn btn-sm btn-light" id="next-month">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="calendar-body">
+                        <!-- El calendario se generará con JavaScript -->
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Citas de hoy -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Citas de Hoy</h5>
+                <a href="{{ url_for('citas.index') }}" class="btn btn-sm btn-primary">
+                    Ver Todas <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="appointment-list">
+                    {% if today_appointments %}
+                        {% for appointment in today_appointments %}
+                        <div class="appointment-item {% if appointment.tipo_cita == 'emergencia' %}emergency{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="appointment-time">
+                                        <i class="far fa-clock me-1"></i>
+                                        {{ appointment.hora_cita.strftime('%H:%M') }}
+                                    </div>
+                                    <div class="appointment-patient">
+                                        {{ appointment.paciente.nombre }} {{ appointment.paciente.apellido }}
+                                    </div>
+                                    <div class="appointment-type">
+                                        {{ appointment.tipo_cita|title }} • Dr. {{ appointment.medico.nombre }}
+                                    </div>
+                                </div>
+                                <span class="badge badge-status {{ appointment.estado }}">
+                                    {{ appointment.estado|replace('_', ' ')|title }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay citas programadas para hoy</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas y notificaciones -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Alertas del Sistema</h5>
+                <span class="badge bg-danger notification-badge">{{ alerts|length }}</span>
+            </div>
+            <div class="card-body">
+                {% if alerts %}
+                    {% for alert in alerts %}
+                    <div class="alert alert-{{ alert.type }} d-flex align-items-center">
+                        <i class="fas fa-{{ alert.icon }} fa-2x me-3"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">{{ alert.title }}</h6>
+                            <p class="mb-0 small">{{ alert.message }}</p>
+                            <small class="text-muted">{{ alert.time|time_ago }}</small>
+                        </div>
+                        {% if alert.action %}
+                        <div class="ms-auto">
+                            <a href="{{ alert.action.url }}" class="btn btn-sm btn-{{ alert.type }}">
+                                {{ alert.action.text }}
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <p class="text-muted">Todo está funcionando correctamente</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Pacientes recientes -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Pacientes Recientes</h5>
+                <a href="{{ url_for('pacientes.index') }}" class="btn btn-sm btn-primary">
+                    Ver Todos <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Paciente</th>
+                                <th>Edad</th>
+                                <th>Última Consulta</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paciente in recent_patients %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-primary">{{ paciente.codigo_paciente }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <div class="avatar-title bg-primary-soft text-primary rounded-circle">
+                                                {{ paciente.nombre[0] }}{{ paciente.apellido[0] }}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <strong>{{ paciente.nombre }} {{ paciente.apellido }}</strong><br>
+                                            <small class="text-muted">{{ paciente.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ paciente.get_edad() }} años</td>
+                                <td>
+                                    {% if paciente.consultas.first() %}
+                                        {{ paciente.consultas.first().fecha_consulta.strftime('%d/%m/%Y') }}
+                                    {% else %}
+                                        <span class="text-muted">Nunca</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-status {% if paciente.activo %}completed{% else %}cancelled{% endif %}">
+                                        {{ 'Activo' if paciente.activo else 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('pacientes.view', id=paciente.id) }}" 
+                                           class="btn btn-outline-primary" title="Ver">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('pacientes.edit', id=paciente.id) }}" 
+                                           class="btn btn-outline-secondary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('pacientes.new') }}" class="btn btn-primary btn-lg btn-loading">
+                        <i class="fas fa-user-plus me-2"></i>Nuevo Paciente
+                    </a>
+                    <a href="{{ url_for('citas.new') }}" class="btn btn-success btn-lg btn-loading">
+                        <i class="fas fa-calendar-plus me-2"></i>Nueva Cita
+                    </a>
+                    <a href="{{ url_for('consultas.new') }}" class="btn btn-info btn-lg btn-loading">
+                        <i class="fas fa-file-medical me-2"></i>Nueva Consulta
+                    </a>
+                    <a href="{{ url_for('reportes.index') }}" class="btn btn-warning btn-lg btn-loading">
+                        <i class="fas fa-chart-bar me-2"></i>Generar Reporte
+                    </a>
+                    
+                    <hr>
+                    
+                    <div class="quick-stats mt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Citas pendientes:</span>
+                            <span class="fw-bold">{{ stats.pending_appointments|default(0) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Exámenes pendientes:</span>
+                            <span class="fw-bold">{{ stats.pending_exams|default(0) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Facturas pendientes:</span>
+                            <span class="fw-bold">{{ stats.pending_invoices|default(0) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Gráfico de actividad
+    var ctx = document.getElementById('activityChart').getContext('2d');
+    var activityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['1 Mar', '5 Mar', '10 Mar', '15 Mar', '20 Mar', '25 Mar', '30 Mar'],
+            datasets: [
+                {
+                    label: 'Pacientes',
+                    data: [12, 19, 8, 15, 22, 18, 25],
+                    borderColor: 'rgb(44, 108, 156)',
+                    backgroundColor: 'rgba(44, 108, 156, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4
+                },
+                {
+                    label: 'Consultas',
+                    data: [8, 12, 6, 10, 15, 12, 18],
+                    borderColor: 'rgb(40, 167, 69)',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4
+                },
+                {
+                    label: 'Citas',
+                    data: [15, 22, 18, 25, 30, 26, 32],
+                    borderColor: 'rgb(255, 193, 7)',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Calendario simple
+    function generateCalendar() {
+        var now = new Date();
+        var month = now.getMonth();
+        var year = now.getFullYear();
+        
+        var monthNames = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+        
+        $('#current-month').text(monthNames[month] + ' ' + year);
+        
+        // Generar días del mes
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+        var firstDay = new Date(year, month, 1).getDay();
+        
+        var calendarHtml = '<div class="row g-1">';
+        
+        // Días de la semana
+        var weekdays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        weekdays.forEach(function(day) {
+            calendarHtml += '<div class="col text-center fw-bold text-muted small">' + day + '</div>';
+        });
+        
+        // Espacios vacíos al inicio
+        for (var i = 0; i < firstDay; i++) {
+            calendarHtml += '<div class="col calendar-day empty"></div>';
+        }
+        
+        // Días del mes
+        var today = now.getDate();
+        for (var day = 1; day <= daysInMonth; day++) {
+            var isToday = (day === today);
+            var hasAppointment = Math.random() > 0.7; // Simulación
+            
+            var dayClass = 'calendar-day';
+            if (isToday) dayClass += ' today';
+            if (hasAppointment) dayClass += ' has-appointment';
+            
+            calendarHtml += '<div class="col ' + dayClass + '" data-date="' + 
+                year + '-' + (month + 1).toString().padStart(2, '0') + '-' + 
+                day.toString().padStart(2, '0') + '">' + day + '</div>';
+            
+            // Nueva fila cada 7 días
+            if ((firstDay + day) % 7 === 0 && day !== daysInMonth) {
+                calendarHtml += '</div><div class="row g-1">';
+            }
+        }
+        
+        calendarHtml += '</div>';
+        $('#calendar').html(calendarHtml);
+    }
+    
+    generateCalendar();
+    
+     // Navegación del calendario
+    $('#prev-month').click(function() {
+        // Implementar lógica para mes anterior
+        console.log('Mes anterior');
+    });
+    
+    $('#next-month').click(function() {
+        // Implementar lógica para mes siguiente
+        console.log('Mes siguiente');
+    });
+    
+    // Cambiar período del gráfico
+    $('[data-period]').click(function() {
+        $('[data-period]').removeClass('active');
+        $(this).addClass('active');
+        
+        var period = $(this).data('period');
+        console.log('Cambiar a período:', period);
+        
+        // Aquí cargarías los nuevos datos para el gráfico
+    });
+    
+    // Actualizar estadísticas en tiempo real
+    setInterval(function() {
+        $.ajax({
+            url: '/api/dashboard/stats',
+            method: 'GET',
+            success: function(data) {
+                // Actualizar contadores animados
+                $('[data-stat]').each(function() {
+                    var stat = $(this).data('stat');
+                    var current = parseFloat($(this).text().replace(/[^0-9.-]+/g, ""));
+                    var target = data[stat] || 0;
+                    
+                    if (!isNaN(current) && current !== target) {
+                        animateCounter(this, current, target, 1000);
+                    }
+                });
+            }
+        });
+    }, 30000); // Cada 30 segundos
+});
+</script>
+{% endblock %}
+```

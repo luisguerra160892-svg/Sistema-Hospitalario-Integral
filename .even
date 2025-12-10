@@ -5,5 +5,5 @@ DATABASE_URL=sqlite:///hospital.db
 MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USE_TLS=true
-MAIL_USERNAME=luis.guerra160892@gmail.com
+MAIL_USERNAME=
 MAIL_PASSWORD=

@@ -23,7 +23,7 @@ Sistema completo de gestión hospitalaria desarrollado en Python/Flask para la a
 ### Para Windows
 ```bash
 # 1. Clonar repositorio
-git clone https://github.com/luisguerra-svg/sistema-hospitalario.git
+git clone https://github.com/luisguerra160892_svg/sistema-hospitalario.git
 cd sistema-hospitalario
 
 # 2. Ejecutar instalador automático

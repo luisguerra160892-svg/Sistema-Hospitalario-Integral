@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sistema-hospitalario"
+version = "1.0.0"
+description = "Sistema integral de gestión hospitalaria"
+readme = "README.md"
+authors = [
+    {name = "Sistema Integral de Gestion Hospitalaria", email = "soporte@hospital.cu"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Healthcare Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "Flask>=2.3.0,<3.0.0",
+    "Flask-SQLAlchemy>=3.0.0,<4.0.0",
+    "Flask-Migrate>=4.0.0,<5.0.0",
+    "pandas>=2.0.0,<3.0.0",
+    "matplotlib>=3.7.0,<4.0.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "pre-commit>=3.0.0",
+]
+installer = [
+    "pyinstaller>=5.0.0",
+    "cx-Freeze>=6.0.0",
+    "pywin32>=300",
+]
+
+[project.urls]
+Homepage = "https://github.com/luisguerra160892-svg/sistema-hospitalario"
+Repository = "https://github.com/luisguerra160892-svg/sistema-hospitalario.git"
+Issues = "https://github.com/luisguerra160892-svg/sistema-hospitalario/issues"
+
+[tool.setuptools]
+packages = ["app"]
+
+[tool.setuptools.package-data]
+app = ["templates/**/*", "static/**/*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=app --cov-report=html"

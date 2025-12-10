@@ -1,0 +1,80 @@
+# Entornos virtuales
+venv/
+env/
+ENV/
+.venv/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Base de datos
+*.db
+*.sqlite3
+
+# Logs y archivos temporales
+*.log
+logs/
+backups/
+uploads/
+temp/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de instalación
+dist/
+build/
+*.exe
+*.msi
+*.spec
+
+# Variables de entorno
+.env
+.env.local
+.secrets
+
+# Coverage
+.coverage
+htmlcov/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Instalador
+*.nsi
+Instalador_*.exe
+
+# Documentación
+docs/_build/
+
+# Archivos de usuario
+*.user
+*.suo
