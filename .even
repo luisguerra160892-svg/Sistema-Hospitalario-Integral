@@ -1,9 +1,0 @@
-FLASK_APP=main.py
-FLASK_ENV=production
-SECRET_KEY=tu-clave-secreta-aqui
-DATABASE_URL=sqlite:///hospital.db
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=true
-MAIL_USERNAME=
-MAIL_PASSWORD=
